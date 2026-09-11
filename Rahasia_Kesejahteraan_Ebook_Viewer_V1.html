@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rahasia Kesejahteraan — Ebook</title>
+<style>
+  *{box-sizing:border-box}
+  html,body{margin:0;width:100%;height:100%;background:#0b1020;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+  #loading{position:fixed;inset:0;display:grid;place-items:center;background:linear-gradient(145deg,#0b1020,#17264a);color:#fff;z-index:10}
+  .card{width:min(92%,420px);padding:28px;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:rgba(255,255,255,.07);backdrop-filter:blur(16px);text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .spinner{width:34px;height:34px;margin:0 auto 16px;border:3px solid rgba(255,255,255,.2);border-top-color:#d8b56a;border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #error{display:none;color:#ffd8d8}
+  #book{display:block;width:100%;height:100%;border:0;background:#fff}
+  .small{opacity:.72;font-size:13px;line-height:1.5}
+</style>
+</head>
+<body>
+<div id="loading">
+  <div class="card">
+    <div class="spinner"></div>
+    <div id="status">Membuka Rahasia Kesejahteraan…</div>
+    <div id="error" class="small"></div>
+  </div>
+</div>
+<iframe id="book" title="Rahasia Kesejahteraan" style="display:none"></iframe>
+<script>
+(async()=>{
+  const ENDPOINT='https://qjnuswdosuujljwjvndy.supabase.co/functions/v1/ebook-content?token=z-EXZghRT3bzq-ECY1J3JdnA';
+  const loading=document.getElementById('loading');
+  const book=document.getElementById('book');
+  const status=document.getElementById('status');
+  const error=document.getElementById('error');
+  try{
+    const r=await fetch(ENDPOINT,{cache:'no-store'});
+    if(!r.ok) throw new Error('Server ebook mengembalikan HTTP '+r.status);
+    const payload=await r.json();
+    if(!payload.ok || !payload.html) throw new Error(payload.error||'Isi ebook tidak tersedia.');
+    book.srcdoc=payload.html;
+    book.onload=()=>{
+      loading.style.display='none';
+      book.style.display='block';
+    };
+    setTimeout(()=>{
+      if(loading.style.display!=='none'){
+        loading.style.display='none';
+        book.style.display='block';
+      }
+    },800);
+  }catch(e){
+    status.textContent='Ebook belum dapat dibuka';
+    error.style.display='block';
+    error.textContent=e.message||String(e);
+    document.querySelector('.spinner').style.display='none';
+  }
+})();
+</script>
+</body>
+</html>
